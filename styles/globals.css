@@ -1,0 +1,20 @@
+body{
+  direction: rtl;
+}
+
+.top {
+  margin-top: 10px;
+}
+.bottom {
+  margin-top: 10px;
+}
+.left{
+  margin-left: 10px;
+}
+.right{
+  margin-right: 10px;
+}
+
+.flex{
+  display: flex;
+}
