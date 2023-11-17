@@ -1,9 +1,11 @@
 
 
-export default function Home() {
+function Home() {
   return (
-
-    <div></div>
-
-  )
+    <div>
+      <h1>به وبسایت من خوش آمدید</h1>
+    </div>
+  );
 }
+
+export default Home;

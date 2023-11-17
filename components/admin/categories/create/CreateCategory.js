@@ -1,108 +1,78 @@
-import { formToJSON } from "axios";
-import { ErrorMessage, Field, Form, Formik } from "formik";
 import React from "react";
-import * as Yup from "yup";
-import { GET, POST } from "../../../../api/axios/AxiosRepository";
+import CustomForm from "../../../../ui/formUi/form/CustomForm";
+import Yup from "../../../../framework/yup/Yup";
+import TextField from "../../../../ui/formUi/text/TextField";
+import FormButton from "../../../../ui/formUi/button/FormButton";
+import CrudRepository from "../../../../repositories/cruds/CrudRepository";
 import { useDispatch } from "react-redux";
 import {
-  addModelToItemsListReducer,
-  removeModelsFromItemsListReducer,
-  showCreateModalReducer,
-} from "../../../../redux/features/admin/CRUD_OperationsSlice";
+  addToItemsReducer,
+  removeFromItemsReducer,
+} from "../../../../redux/features/admin/AdminSlice";
+import { Col, Container, Row } from "react-bootstrap";
 
 const CreateCategory = () => {
   const dispatch = useDispatch();
 
   const validationSchema = Yup.object({
-    description: Yup.string().max(500, "500"),
     categoryName: Yup.string().required("*"),
-    imageUrl: Yup.string().max(2000, "2000"),
+    description: Yup.string(),
+    imageUrl: Yup.string(),
     imageAlter: Yup.string(),
   });
 
   const formFields = {
-    description: "",
     categoryName: "",
+    description: "",
     imageUrl: "",
     imageAlter: "",
   };
 
-  const createCategoryHandler = async (values) => {
-    await POST("categories/create", values).then((response) => {
+  const createCategory = async (body) => {
+    await CrudRepository.create("categories/create", body).then((response) => {
       if (response.data.value.success === true) {
-        dispatch(showCreateModalReducer(false));
-      } else {
         alert(`${response.data.value.message}`);
+        CrudRepository.getAll("categories").then((results) => {
+          dispatch(removeFromItemsReducer());
+          dispatch(addToItemsReducer(results.data.value));
+        });
+      } else {
+        response.data.value.errors.map((item) => {
+          alert(`${item}`);
+        });
       }
     });
   };
 
+  const createCategoryHandler = (values) => {
+    createCategory(values);
+  };
+
   return (
-    <div className="top">
-      <Formik
-        onSubmit={createCategoryHandler}
-        validateOnBlur={false}
-        validateOnChange={false}
-        initialValues={formFields}
-        validationSchema={validationSchema}
-      >
-        <Form method="post">
-          <div className="form-group top">
-            <label htmlFor="categoryName" className="form-label top">
-              نام دسته بندی
-            </label>
-            <Field
-              type="text"
-              className="form-control top"
-              name="categoryName"
-              id="categoryName"
-            />
-            <ErrorMessage name="categoryName" />
-          </div>
-          <div className="form-group top">
-            <label htmlFor="description" className="form-label top">
-              توضیحات
-            </label>
-            <Field
-              type="text"
-              className="form-control top"
-              name="description"
-              id="description"
-            />
-            <ErrorMessage name="description" />
-          </div>
-          <div className="form-group top">
-            <label htmlFor="imageUrl" className="form-label top">
-              عکس
-            </label>
-            <Field
-              type="text"
-              className="form-control top"
-              name="imageUrl"
-              id="imageUrl"
-            />
-            <ErrorMessage name="imageUrl" />
-          </div>
-          <div className="form-group top">
-            <label htmlFor="imageAlter" className="form-label top">
-              متن جایگزین عکس
-            </label>
-            <Field
-              type="text"
-              className="form-control top"
-              name="imageAlter"
-              id="imageAlter"
-            />
-            <ErrorMessage name="imageAlter" />
-          </div>
-          <div className="form-group top">
-            <button type="submit" className="btn btn-success top">
-              ثبت
-            </button>
-          </div>
-        </Form>
-      </Formik>
-    </div>
+    <Container>
+      <Row className="justify-content-center">
+        <Col xxl={4} xl={6} lg={6} md={8} sm={10} xs={12}>
+          <CustomForm
+            submit={createCategoryHandler}
+            change={false}
+            blur={false}
+            schema={validationSchema}
+            fields={formFields}
+            method="post"
+          >
+            <TextField name="categoryName" label="نام دسته بندی" />
+
+            <TextField name="description" label="توضیحات" />
+
+            <TextField name="imageUrl" label="آدرس عکس" />
+
+            <TextField name="imageAlter" label="جایگزین عکس" />
+
+            <FormButton variant="btn btn-success">ثبت</FormButton>
+          </CustomForm>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

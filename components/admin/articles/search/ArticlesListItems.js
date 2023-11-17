@@ -1,54 +1,73 @@
-import React, { useEffect } from "react";
-import { Table } from "react-bootstrap";
-import DeleteArticle from "../delete/DeleteArticle";
-import EditModal from "../../../framework/admin/modal/EditModal";
-import EditArticle from "../edit/EditArticle";
+import React from "react";
+import CustomGrid from "../../../../ui/gridUi/CustomGrid";
 import { useSelector } from "react-redux";
+import { FormCheck } from "react-bootstrap";
+import {
+  FaCheck,
+  FaCheckCircle,
+  FaCross,
+  FaTimes,
+  FaTimesCircle,
+} from "react-icons/fa";
+import EditArticle from "../edit/EditArticle";
+import CustomModal from "../../../../ui/modalUi/CustomModal";
+import DeleteArticle from "../delete/DeleteArticle";
 
 const ArticlesListItems = (props) => {
-
-  const selector = useSelector((state)=>state.crud.items)
-  
-  selector.map(item=>{
-  })
+  const articlesListSelector = useSelector((state) => state.admin.items);
 
   return (
-    <Table bordered hover striped size="sm" className="top">
-      <thead>
+    <CustomGrid
+      ths={
         <tr>
           <th>شناسه</th>
           <th>عنوان</th>
           <th>متن</th>
-          <th>توضیحات</th>
-          <th>نویسنده</th>
+          <th>امتیاز</th>
           <th>دسته بندی</th>
+          <th>توضیحات</th>
+          <th>ویدیو</th>
+          <th>فایل صوتی</th>
           <th></th>
           <th></th>
         </tr>
-      </thead>
-      <tbody>
-        {selector.map(item=>{
-          return(
-            
-            <tr key={item.id}>
-                <td>{item.id}</td>
-                <td>{item.title}</td>
-                <td>{item.text}</td>
-                <td>{item.description}</td>
-                <td>{item.author}</td>
-                <td>{item.categoryName}</td>
-                <td>
-                  <EditArticle data={item}/>
-                </td>
-                <td>
-                  <DeleteArticle id={item.id} />
-                </td>
-              </tr>
-            );
-        })}
-      </tbody>
-    </Table>
+      }
+      tds={articlesListSelector.map((item) => {
+        return (
+          <tr key={item.id}>
+            <th>{item.id}</th>
+            <th>{item.title}</th>
+            <th>{item.text}</th>
+            <th>{item.rate}</th>
+            <th>{item.categoryID}</th>
+            <th>{item.description}</th>
+            <th>
+              {item.videoUrl !== "" ? (
+                <FaCheckCircle className="text-success h4" />
+              ) : (
+                <FaTimesCircle className="text-danger h4" />
+              )}
+            </th>
+            <th>
+              {item.audioUrl !== "" ? (
+                <FaCheckCircle className="text-success h4" />
+              ) : (
+                <FaTimesCircle className="text-danger h4" />
+              )}
+            </th>
+            <th>
+              <CustomModal title='ویرایش مقاله' className='btn btn-warning'>
+              <EditArticle data={item}/>
+              </CustomModal>
+            </th>
+            <th>
+              <DeleteArticle id={item.id}/>
+            </th>
+          </tr>
+        );
+      })}
+    />
   );
-};
+}
 
 export default ArticlesListItems;

@@ -1,27 +1,27 @@
 import { Provider } from "react-redux";
-import "../styles/globals.css";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { Store, persistor } from "../redux/Store";
 import { PersistGate } from "redux-persist/integration/react";
-import Header from "../components/layout/header/Header";
-import Footer from "../components/layout/footer/Footer";
-import TopMenu from "../components/layout/menu/TopMenu";
-import PageLoading from "../components/loadings/pageloading/PageLoading";
-import { Store, persistor } from "../redux/features/Store";
+import "bootstrap/dist/css/bootstrap.css";
+import "../styles/globals.css";
+import Header from "../ui/wireframeUi/Header/Header";
+import Footer from "../ui/wireframeUi/footer/Footer";
+
 
 function MyApp({ Component, pageProps }) {
   return (
-    <>
-      <Header />
-      <Provider store={Store}>
-        <PersistGate persistor={persistor} loading={<PageLoading />}>
-
-              <TopMenu />
-              <Component {...pageProps} />
-              <Footer />
-
-        </PersistGate>
-      </Provider>
-    </>
+<>
+      <Header></Header>
+        <Provider store={Store}>
+          <PersistGate persistor={persistor} loading={<h1>loading...</h1>}>
+            <Component {...pageProps} />
+          </PersistGate>
+        </Provider>
+      {/* <Footer>
+        <h1>این فوتر منه </h1>
+        <h2>دوسش دارم خیلی زیاد</h2>
+      </Footer> */}
+      </>
+    
   );
 }
 

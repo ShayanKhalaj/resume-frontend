@@ -18,3 +18,15 @@ body{
 .flex{
   display: flex;
 }
+
+.block{
+  display: block;
+}
+
+.full-padding {
+  padding: 5px;
+}
+.border-soft{
+  border-radius: 10px;
+}
+

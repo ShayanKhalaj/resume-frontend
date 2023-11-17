@@ -1,0 +1,22 @@
+.hr{
+    color: white;
+}
+.home{
+    text-decoration: none;
+    color: white;
+    font-size: 24;
+    font-weight: 500;
+    padding: 10px;
+}
+.home:hover{
+    text-decoration: underline;
+    color: orangered;
+    font-size: 42;
+    font-weight: 800;
+
+}
+.menu{
+    justify-content: center;
+    align-items: center;
+    direction: rtl;
+}

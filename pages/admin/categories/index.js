@@ -1,22 +1,19 @@
-import React from "react";
+import React, { useMemo } from "react";
+import CategorySearchModel from "../../../components/admin/categories/search/CategorySearchModel";
+import CrudRepository from "../../../repositories/cruds/CrudRepository";
+import CategoryListItems from "../../../components/admin/categories/search/CategoryListItems";
 import { Col, Container, Row } from "react-bootstrap";
-import SearchCategory from "../../../components/admin/categories/search/SearchCategory";
-import CategoriesListItems from "../../../components/admin/categories/search/CategoriesListItems";
+import NavMenu from "../../../ui/wireframeUi/nav/NavMenu";
+import AdminIndex from "../../../ui/wireframeUi/admin/AdminIndex";
 
-const CategoryMangement = (props) => {
+const index = () => {
   return (
-    <>
-      <Container className="top">
-        <Row className="justify-content-center">
-          <Col xs={12} sm={12} md={10} lg={10} xl={8} xxl={8}>
-            <h1>مدیریت دسته بندی ها</h1>
-            <SearchCategory />
-          </Col>
-        </Row>
-      </Container>
-      <CategoriesListItems />
-    </>
+    <AdminIndex
+    searchModel={<CategorySearchModel />}
+      listItems={<CategoryListItems />}
+      title="مدیریت دسته بندی ها"
+    />
   );
 };
 
-export default CategoryMangement;
+export default index;

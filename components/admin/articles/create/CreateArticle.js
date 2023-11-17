@@ -1,23 +1,23 @@
-import { ErrorMessage, Field, Form, Formik } from "formik";
-import React, { memo, useEffect, useMemo } from "react";
-import * as Yup from "yup";
-import { GET, POST } from "../../../../api/axios/AxiosRepository";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useEffect, useMemo, useState } from "react";
+import { Col, Container, Row } from "react-bootstrap";
+import CustomForm from "../../../../ui/formUi/form/CustomForm";
+import TextField from "../../../../ui/formUi/text/TextField";
+import SelectField from "../../../../ui/formUi/select/SelectField";
+import { Field } from "formik";
+import Yup from "../../../../framework/yup/Yup";
+import FormButton from "../../../../ui/formUi/button/FormButton";
+import CrudRepository from "../../../../repositories/cruds/CrudRepository";
+import { useDispatch } from "react-redux";
 import {
-  addModelToItemsListReducer,
-  removeModelFromItemReducer,
-  removeModelsFromItemsListReducer,
-  showCreateModalReducer,
-  showModalReducer,
-} from "../../../../redux/features/admin/CRUD_OperationsSlice";
-import { useRouter } from "next/router";
+  addToItemsReducer,
+  removeFromItemsReducer,
+} from "../../../../redux/features/admin/AdminSlice";
 
-const CreateArticle = (props) => {
+const CreateArticle = React.memo((props) => {
   const dispatch = useDispatch();
-  const router = useRouter()
 
   const validationSchema = Yup.object({
-    categoryID: Yup.number().required("*"),
+    categoryID: Yup.number().required("*").moreThan(0, "*"),
     title: Yup.string().required("*"),
     text: Yup.string().required("*"),
     description: Yup.string(),
@@ -29,7 +29,7 @@ const CreateArticle = (props) => {
   });
 
   const formFields = {
-    categoryID: -1,
+    categoryID: 0,
     title: "",
     text: "",
     description: "",
@@ -40,50 +40,42 @@ const CreateArticle = (props) => {
     rate: 1,
   };
 
-
   const createArticle = async (body) => {
-    await POST("articles/create", body).then((response) => {
-      if (response.data.value.success === true) {
-        GET("articles").then((response) => {
-          dispatch(removeModelsFromItemsListReducer())
-          dispatch(addModelToItemsListReducer(response.data.value));
-          router.push('/admin/articles')
-        });
-        dispatch(showCreateModalReducer(false));
-        alert(response.data.value.message);
-      } else {
-        alert(`${response.data.value.message} : ${response.data.value.errors}`);
-      }
-    });
+
+    await CrudRepository.create("articles/create", body)
+      .then((response) => {
+        if (response.data.value.success === true) {
+          CrudRepository.getAll("articles").then((results) => {
+            alert(`${response.data.value.message}`);
+            dispatch(removeFromItemsReducer());
+            dispatch(addToItemsReducer(results.data.value));
+          });
+        } else {
+          alert(
+            `${response.data.value.message} : ${response.data.value.errors}`
+          );
+        }
+      })
+
   };
 
-
-  const createArticleHanlder = (values) => {
+  const createArticleHandler = (values) => {
     createArticle(values);
   };
 
   return (
-    <div>
-      <Formik
-        onSubmit={createArticleHanlder}
-        validationSchema={validationSchema}
-        initialValues={formFields}
-        validateOnBlur={false}
-        validateOnChange={false}
-      >
-        <Form method="post">
-          <div className="form-group top">
-            <label htmlFor="categoryID" className="form-label">
-              دسته بندی
-            </label>
-            <Field
-              as="select"
-              type="number"
-              className="form-select"
-              name="categoryID"
-              id="categoryID"
-            >
-              <option value={-1}></option>
+    <Container>
+      <Row className="justify-content-center">
+        <Col xxl={4} xl={6} lg={6} md={8} sm={10} xs={12}>
+          <CustomForm
+            submit={createArticleHandler}
+            change={false}
+            blur={false}
+            schema={validationSchema}
+            fields={formFields}
+            method="post"
+          >
+            <SelectField name="categoryID" label="انتخاب دسته بندی">
               {props.categories.map((item) => {
                 return (
                   <option key={item.id} value={item.id}>
@@ -91,135 +83,32 @@ const CreateArticle = (props) => {
                   </option>
                 );
               })}
-            </Field>
-            <ErrorMessage name="categoryID" />
-          </div>
+            </SelectField>
 
-          <div className="from-group">
-            <label htmlFor="title" className="form-label">
-              عنوان
-            </label>
-            <Field
-              type="text"
-              className="form-control"
-              id="title"
-              name="title"
-            />
-            <ErrorMessage name="title" />
-          </div>
+            <TextField name="title" label="عنوان" />
 
-          <div className="from-group">
-            <label htmlFor="text" className="form-label">
-              متن
-            </label>
-            <Field
-              as="textArea"
-              type="text"
-              className="form-control"
-              id="text"
-              name="text"
-            />
-            <ErrorMessage name="text" />
-          </div>
+            <TextField name="text" label="متن" />
 
-          <div className="from-group">
-            <label htmlFor="description" className="form-label">
-              توضیحات
-            </label>
-            <Field
-              as="textArea"
-              type="text"
-              className="form-control"
-              id="description"
-              name="description"
-            />
-            <ErrorMessage name="description" />
-          </div>
+            <TextField name="description" label="توضیحات" />
 
-          <div className="from-group">
-            <label htmlFor="videoUrl" className="form-label">
-              آدرس ویدئو
-            </label>
-            <Field
-              type="text"
-              className="form-control"
-              id="videoUrl"
-              name="videoUrl"
-            />
-            <ErrorMessage name="videoUrl" />
-          </div>
+            <TextField name="videoUrl" label="ویدئو" />
 
-          <div className="from-group">
-            <label htmlFor="videoDescription" className="form-label">
-              توضیحات ویدئو
-            </label>
-            <Field
-              as="textArea"
-              type="text"
-              className="form-control"
-              id="videoDescription"
-              name="videoDescription"
-            />
-            <ErrorMessage name="videoDescription" />
-          </div>
+            <TextField name="videoDescription" label="جایگزین ویدئو" />
 
-          <div className="from-group">
-            <label htmlFor="audioUrl" className="form-label">
-              آدرس فایل صوتی
-            </label>
-            <Field
-              type="text"
-              className="form-control"
-              id="audioUrl"
-              name="audioUrl"
-            />
-            <ErrorMessage name="audioUrl" />
-          </div>
+            <TextField name="audioUrl" label="فایل صوتی" />
 
-          <div className="from-group">
-            <label htmlFor="audioDescription" className="form-label">
-              توضیحات فایل صوتی
-            </label>
-            <Field
-              as="textArea"
-              type="text"
-              className="form-control"
-              id="audioDescription"
-              name="audioDescription"
-            />
-            <ErrorMessage name="audioDescription" />
-          </div>
+            <TextField name="audioDescription" label="جایگزین فایل صوتی" />
 
-          <div className="form-gruop">
-            <label htmlFor="rate" className="form-label">
-              امتیاز
-            </label>
-            <Field
-              as="select"
-              type="number"
-              className="form-select"
-              id="rate"
-              name="rate"
-            >
-              <option value={1}></option>
-              <option value={1}>1</option>
-              <option value={2}>2</option>
-              <option value={3}>3</option>
-              <option value={4}>4</option>
-              <option value={5}>5</option>
-            </Field>
-            <ErrorMessage name="rate" />
-          </div>
+            <TextField name="rate" label="امتیاز" />
 
-          <div className="form-group top">
-            <button type="submit" className="btn btn-success">
+            <FormButton variant="btn btn-success" type="submit">
               ثبت
-            </button>
-          </div>
-        </Form>
-      </Formik>
-    </div>
+            </FormButton>
+          </CustomForm>
+        </Col>
+      </Row>
+    </Container>
   );
-};
+});
 
 export default CreateArticle;

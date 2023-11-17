@@ -1,179 +1,103 @@
-import { ErrorMessage, Field, Form, Formik } from "formik";
-import React, { useEffect, useMemo, useState } from "react";
-import { GET, POST } from "../../../../api/axios/AxiosRepository";
-import ArticlesListItems from "./ArticlesListItems";
-import { Col, Container, Row } from "react-bootstrap";
-import CreateArticle from "../create/CreateArticle";
+import React, { useMemo, useState } from "react";
+import FormContainer from "../../../../ui/formUi/container/FormContainer";
+import CustomForm from "../../../../ui/formUi/form/CustomForm";
+import SelectField from "../../../../ui/formUi/select/SelectField";
+import TextField from "../../../../ui/formUi/text/TextField";
+import FormButton from "../../../../ui/formUi/button/FormButton";
+import CustomModal from "../../../../ui/modalUi/CustomModal";
+import CrudRepository from "../../../../repositories/cruds/CrudRepository";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  addModelToItemsListReducer,
-  removeModelsFromItemsListReducer,
-} from "../../../../redux/features/admin/CRUD_OperationsSlice";
-import CreateModal from "../../../framework/admin/modal/CreateModal";
+  addToItemsReducer,
+  removeFromItemsReducer,
+} from "../../../../redux/features/admin/AdminSlice";
+import CreateArticle from "../create/CreateArticle";
 
 const ArticleSearchModel = () => {
-
-  
   const dispatch = useDispatch();
-  const articlesSearchResults = useSelector((state) => state.crud.items);
-  const createModal = useSelector((state)=>state.crud.createModal)
-  const editModal = useSelector((state)=>state.crud.editModal)
-  
-  const [categoriesDropDown, setCategoriesDropDown] = useState([]);
-  const [articlesDropDown, setArticlesDropDown] = useState([]);
+  const articlesListSelector = useSelector((state) => state.admin.items);
+
+  const [inflateCategoriesDropDown, setInflateCategoriesDropDown] = useState(
+    []
+  );
+  const [inflateArticlesDropDown, setInflateArticlesDropDown] = useState([]);
 
   const formFields = {
-    categoryID: -1,
-    id: -1,
+    id: 0,
     title: "",
-    rate: -1,
+    text: "",
+    description: "",
+    rate: 0,
+    categoryID: 0,
   };
 
-  const inflateCategories = async () => {
-    await GET("categories").then((response) => {
-      setCategoriesDropDown(response.data.value);
+  const getCategories = async () => {
+    await CrudRepository.getAll("categories").then((response) => {
+      setInflateCategoriesDropDown(response.data.value);
     });
   };
 
-  const inflateArticles = async () => {
-    await GET("articles").then((response) => {
-      setArticlesDropDown(response.data.value);
+  const getArticles = async () => {
+    await CrudRepository.getAll("articles").then((response) => {
+      setInflateArticlesDropDown(response.data.value);
     });
   };
 
-  useMemo(async () => {
-    await GET("articles").then((response) => {
-      dispatch(removeModelsFromItemsListReducer());
-      dispatch(addModelToItemsListReducer(response.data.value))
-      inflateArticles();
-      inflateCategories();
-    });
-  }, [createModal||editModal]);
+  useMemo(() => {
+    getCategories();
+    getArticles();
+  }, [articlesListSelector]);
 
-  const searchArticleHandler = async (values) => {
-    await POST("articles/search", values)
-      .then((response) => {
-        dispatch(removeModelsFromItemsListReducer())
-        dispatch(addModelToItemsListReducer(response.data.value.results))
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  const searchArticle = async (body) => {
+    await CrudRepository.search("articles/search", body).then((response) => {
+      dispatch(removeFromItemsReducer());
+      dispatch(addToItemsReducer(response.data.value.results));
+    });
+  };
+
+  const searchArticlesHandler = (values) => {
+    searchArticle(values);
   };
 
   return (
-    <div>
-      <Container className="top">
-        <Row className="justify-content-center ">
-          <Col xxl={4} xl={4} md={8} lg={8} sm={12} sx={12}>
-            <Formik onSubmit={searchArticleHandler} initialValues={formFields}>
-              <Form>
-                <div className="form-group top">
-                  <lable className="form-label" htmlFor="categoryID">
-                    انتخاب دسته بندی
-                  </lable>
-                  <Field
-                    type="number"
-                    name="categoryID"
-                    className="form-select top"
-                    id="categoryID"
-                    as="select"
-                  >
-                    <option value={-1}></option>
-                    {categoriesDropDown.map((item) => {
-                      return (
-                        <option value={item.id} key={item.id}>
-                          {item.categoryName}
-                        </option>
-                      );
-                    })}
-                  </Field>
-                  <ErrorMessage name="categoryID" />
-                </div>
+    <FormContainer justify={true}>
+      <CustomForm
+        submit={searchArticlesHandler}
+        fields={formFields}
+        validation={null}
+        blur={false}
+        change={false}
+      >
+        <SelectField name="categoryId" label="انتخاب دسته بندی">
+          {inflateCategoriesDropDown.map((item) => {
+            return (
+              <option key={item.id} value={item.id}>
+                {item.categoryName}
+              </option>
+            );
+          })}
+        </SelectField>
 
-                <div className="form-group top">
-                  <lable className="form-label" htmlFor="id">
-                    انتخاب مقاله
-                  </lable>
-                  <Field
-                    type="number"
-                    name="id"
-                    className="form-select top"
-                    id="id"
-                    as="select"
-                  >
-                    <option value={-1}></option>
-                    {articlesDropDown.map((item) => {
-                      return (
-                        <option value={item.id} key={item.id}>
-                          {item.title}
-                        </option>
-                      );
-                    })}
-                  </Field>
-                  <ErrorMessage name="id" />
-                </div>
+        <SelectField name="id" label="انتخاب مقاله">
+          {inflateArticlesDropDown.map((item) => {
+            return (
+              <option key={item.id} value={item.id}>
+                {item.title}
+              </option>
+            );
+          })}
+        </SelectField>
 
-                <div className="form-group top">
-                  <lable className="form-label" htmlFor="title">
-                    عنوان
-                  </lable>
-                  <Field
-                    type="text"
-                    name="title"
-                    className="form-control top"
-                    id="title"
-                  />
-                  <ErrorMessage name="title" />
-                </div>
+        <TextField name="description" label="توضیحات" />
 
-                <div className="form-group top">
-                  <lable className="form-label" htmlFor="rate">
-                    امتیاز
-                  </lable>
-                  <Field
-                    type="number"
-                    name="rate"
-                    className="form-select top"
-                    id="rate"
-                    as="select"
-                  >
-                    <option value={-1}></option>
-                    <option value={1}>1</option>
-                    <option value={2}>2</option>
-                    <option value={3}>3</option>
-                    <option value={4}>4</option>
-                    <option value={5}>5</option>
-                  </Field>
-                  <ErrorMessage name="rate" />
-                </div>
-
-                <div className="form-gruop top flex">
-                  <button
-                    type="submit"
-                    className="btn btn-primary top left right bottom"
-                  >
-                    جستجو
-                  </button>
-                  <CreateModal
-                    className="left right top bottom"
-                    variant="success"
-                    modalBody={
-                      <CreateArticle categories={categoriesDropDown} />
-                    }
-                    modalTitle="ثبت مقاله جدید"
-                    modalFooter={false}
-                    buttonTitle="ثبت مقاله جدید"
-                  />
-                </div>
-              </Form>
-            </Formik>
-          </Col>
-        </Row>
-      </Container>
-
-        <ArticlesListItems/>
-    </div>
+        <div className="flex form-group top left right bottom">
+          <FormButton>جستجو</FormButton>
+          <CustomModal  title='ثبت مقاله جدید' className='btn btn-success'>
+            <CreateArticle categories={inflateCategoriesDropDown}/>
+        </CustomModal>
+        </div>
+      </CustomForm>
+    </FormContainer>
   );
 };
 

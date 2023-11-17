@@ -1,46 +1,35 @@
-import React from "react";
-import { DELETE, GET } from "../../../../api/axios/AxiosRepository";
-import { useDispatch } from "react-redux";
-import {
-  addModelToItemsListReducer,
-  removeModelsFromItemsListReducer,
-} from "../../../../redux/features/admin/CRUD_OperationsSlice";
+import React from 'react'
+import { useDispatch } from 'react-redux';
+import CustomButton from '../../../../ui/customUi/button/CustomButton'
+import CrudRepository from '../../../../repositories/cruds/CrudRepository';
+import { addToItemsReducer, removeFromItemsReducer } from '../../../../redux/features/admin/AdminSlice';
 
 const DeleteArticle = (props) => {
-  const dispatch = useDispatch();
 
-  const deleteArticleHandler = async () => {
-   
-      await DELETE(`articles/delete/${props.id}`)
-        .then((response) => {
+    const dispatch = useDispatch();
+
+    const deleteArticle = async () => {
+      await CrudRepository.delete(`articles/delete/${props.id}`).then(
+        (response) => {
+            console.log(response)
           if (response.data.value.success === true) {
-            dispatch(removeModelsFromItemsListReducer());
-            GET("articles")
-              .then((result) => {
-                dispatch(addModelToItemsListReducer(result.data.value));
-              })
-              .catch((error) => {
-                console.log(error);
-              });
+            CrudRepository.getAll("articles").then((results) => {
+              alert(response.data.value.message);
+              dispatch(removeFromItemsReducer());
+              dispatch(addToItemsReducer(results.data.value));
+            });
           } else {
-            console.log(response.data.value.message);
+            alert(`${response.data.value.message} : ${response.data.value.errors}`);
           }
-        })
-        .catch((error) => {
-          console.log(error);
-        }); 
-
-  };
+        }
+      );
+    };
 
   return (
-    <button
-      type="button"
-      className="btn btn-danger"
-      onClick={deleteArticleHandler}
-    >
+    <CustomButton click={deleteArticle} variant="danger">
       حذف
-    </button>
-  );
-};
+    </CustomButton>
+  )
+}
 
-export default DeleteArticle;
+export default DeleteArticle
