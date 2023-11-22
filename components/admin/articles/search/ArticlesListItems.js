@@ -12,6 +12,7 @@ import {
 import EditArticle from "../edit/EditArticle";
 import CustomModal from "../../../../ui/modalUi/CustomModal";
 import DeleteArticle from "../delete/DeleteArticle";
+import EditArticleImages from "../../articleImages/edit/EditArticleImages";
 
 const ArticlesListItems = (props) => {
   const articlesListSelector = useSelector((state) => state.admin.items);
@@ -57,11 +58,11 @@ const ArticlesListItems = (props) => {
             </th>
             <th>
               <CustomModal title='ویرایش مقاله' className='btn btn-warning'>
-              <EditArticle data={item}/>
+              <EditArticleImages data={item}/>
               </CustomModal>
             </th>
             <th>
-              <DeleteArticle id={item.id}/>
+              <DeleteArticle id={item.id} />
             </th>
           </tr>
         );

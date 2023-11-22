@@ -13,7 +13,7 @@ const localStorageConfiguration = {
 }
 
 const rootReducer = combineReducers({
-    admin:adminSlice
+    admin:adminSlice,
 })
 
 

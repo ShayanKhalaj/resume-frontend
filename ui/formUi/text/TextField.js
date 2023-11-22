@@ -10,7 +10,7 @@ const TextField = (props) => {
         {props.label}
       </label>
       <Field label={props.label}
-        type="text"
+        type={props.type?props.type:'text'}
         name={props.name}
         id={props.name}
         className="form-control"
